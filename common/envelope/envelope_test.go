@@ -29,7 +29,7 @@ func Test_myEnvelope(t *testing.T) {
 	msg := "f*ck envelope seal and open ?" // 明文消息
 	fmt.Println("明文消息：", msg)
 
-	cipher, encryptedSecretKey := Seal(msg, secretKey, senderPubKey, receiverPriKey)
+	cipher, encryptedSecretKey := Seal(msg, secretKey, receiverPubKey, senderPriKey)
 	fmt.Println("密文，数字信封：", cipher, encryptedSecretKey)
 
 	plain, ok := Open(cipher, encryptedSecretKey, senderPubKey, receiverPriKey)

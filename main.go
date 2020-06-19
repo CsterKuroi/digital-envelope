@@ -27,7 +27,7 @@ func main() {
 	msg := "f*ck envelope seal and open ?" // 明文消息
 	fmt.Println("明文消息：", msg)
 
-	cipher, encryptedSecretKey := envelope.Seal(msg, secretKey, senderPubKey, receiverPriKey)
+	cipher, encryptedSecretKey := envelope.Seal(msg, secretKey, receiverPubKey, senderPriKey)
 	fmt.Println("密文，数字信封：", cipher, encryptedSecretKey)
 
 	plain, ok := envelope.Open(cipher, encryptedSecretKey, senderPubKey, receiverPriKey)
