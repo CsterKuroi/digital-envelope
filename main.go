@@ -9,18 +9,27 @@ import (
 )
 
 func main() {
-	secretKey := secretbox.GenerateSecretKey()
-	fmt.Println(secretKey)
+	secretKey := secretbox.GenerateSecretKey() // 对称密钥，用于加密明文消息
+	fmt.Println("对称密钥：", secretKey)
 
-	sessionPub, sessionPri, err := box.GenerateKeyPair()
-	fmt.Println(sessionPub, sessionPri, err)
+	senderPubKey, senderPriKey, err := box.GenerateKeyPair() // 发送方 公私钥
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("发送方公私钥：", senderPubKey, senderPriKey)
 
-	msg := "f*ck envelope seal and open ?"
-	fmt.Println(msg)
+	receiverPubKey, receiverPriKey, err := box.GenerateKeyPair() // 接收方 公私钥
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("接收方公私钥：", receiverPubKey, receiverPriKey)
 
-	cipher, encryptedSecretKey, tempPub := envelope.Seal(msg, secretKey, sessionPub)
-	fmt.Println(cipher, encryptedSecretKey, tempPub)
+	msg := "f*ck envelope seal and open ?" // 明文消息
+	fmt.Println("明文消息：", msg)
 
-	plain, ok := envelope.Open(cipher, encryptedSecretKey, tempPub, sessionPri)
-	fmt.Println(plain, ok)
+	cipher, encryptedSecretKey := envelope.Seal(msg, secretKey, senderPubKey, receiverPriKey)
+	fmt.Println("密文，数字信封：", cipher, encryptedSecretKey)
+
+	plain, ok := envelope.Open(cipher, encryptedSecretKey, senderPubKey, receiverPriKey)
+	fmt.Println("解密得到：", plain, ok)
 }

@@ -2,7 +2,6 @@ package envelope
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
 
 	"digital-envelope/common/box"
@@ -12,20 +11,29 @@ import (
 // seal: msg, secretKey, sessionPub, ----> cipher, encryptedSecretKey, tempPub
 // open: cipher, encryptedSecretKey, tempPub, sessionPri ----> plain, ok
 func Test_myEnvelope(t *testing.T) {
-	secretKey := secretbox.GenerateSecretKey()
-	fmt.Println(secretKey)
+	secretKey := secretbox.GenerateSecretKey() // 对称密钥，用于加密明文消息
+	fmt.Println("对称密钥：", secretKey)
 
-	sessionPub, sessionPri, err := box.GenerateKeyPair()
-	fmt.Println(sessionPub, sessionPri, err)
+	senderPubKey, senderPriKey, err := box.GenerateKeyPair() // 发送方 公私钥
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("发送方公私钥：", senderPubKey, senderPriKey)
 
-	msg := "f*ck envelope seal and open ?"
-	fmt.Println(msg)
+	receiverPubKey, receiverPriKey, err := box.GenerateKeyPair() // 接收方 公私钥
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("接收方公私钥：", receiverPubKey, receiverPriKey)
 
-	cipher, encryptedSecretKey, tempPub := Seal(msg, secretKey, sessionPub)
-	fmt.Println(cipher, encryptedSecretKey, tempPub)
+	msg := "f*ck envelope seal and open ?" // 明文消息
+	fmt.Println("明文消息：", msg)
 
-	plain, ok := Open(cipher, encryptedSecretKey, tempPub, sessionPri)
-	fmt.Println(plain, ok)
+	cipher, encryptedSecretKey := Seal(msg, secretKey, senderPubKey, receiverPriKey)
+	fmt.Println("密文，数字信封：", cipher, encryptedSecretKey)
+
+	plain, ok := Open(cipher, encryptedSecretKey, senderPubKey, receiverPriKey)
+	fmt.Println("解密得到：", plain, ok)
 }
 
 func Test_envelope(t *testing.T) {
@@ -53,87 +61,3 @@ func Test_envelope(t *testing.T) {
 	plain, ok := secretbox.Open(decryptedSecretKey, cipher)
 	fmt.Println(plain, ok)
 }
-
-func Test_myEnvelopeText(t *testing.T) {
-	secretKey := secretbox.GenerateSecretKey()
-	fmt.Println(secretKey)
-
-	sessionPub, sessionPri, err := box.GenerateKeyPair()
-	fmt.Println(sessionPub, sessionPri, err)
-
-	f, err := ioutil.ReadFile("envelope.go")
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		panic(err)
-	}
-	msg := string(f)
-	fmt.Println(msg)
-
-	cipher, encryptedSecretKey, tempPub := Seal(msg, secretKey, sessionPub)
-	fmt.Println(cipher, encryptedSecretKey, tempPub)
-
-	plain, ok := Open(cipher, encryptedSecretKey, tempPub, sessionPri)
-	fmt.Println(plain, ok)
-}
-
-func Test_myEnvelopePhoto(t *testing.T) {
-	secretKey := secretbox.GenerateSecretKey()
-	fmt.Println(secretKey)
-
-	sessionPub, sessionPri, err := box.GenerateKeyPair()
-	fmt.Println(sessionPub, sessionPri, err)
-
-	f, err := ioutil.ReadFile("shan.jpg")
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		panic(err)
-	}
-	msg := string(f)
-	fmt.Println(msg)
-
-	cipher, encryptedSecretKey, tempPub := Seal(msg, secretKey, sessionPub)
-	fmt.Println(cipher, encryptedSecretKey, tempPub)
-
-	plain, ok := Open(cipher, encryptedSecretKey, tempPub, sessionPri)
-	fmt.Println(plain, ok)
-
-	fn := "shan_return.jpg"
-	data := []byte(plain)
-	ioutil.WriteFile(fn, data, 0664)
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		panic(err)
-	}
-}
-
-// too big
-//func Test_myEnvelopeVideo(t *testing.T) {
-//	secretKey := secretbox.GenerateSecretKey()
-//	fmt.Println(secretKey)
-//
-//	sessionPub, sessionPri, err := box.GenerateKeyPair()
-//	fmt.Println(sessionPub, sessionPri, err)
-//
-//	f, err := ioutil.ReadFile("second.mp4")
-//	if err != nil {
-//		fmt.Printf("%s\n", err)
-//		panic(err)
-//	}
-//	msg := string(f)
-//	fmt.Println("msg")
-//
-//	cipher, encryptedSecretKey, tempPub := Seal(msg, secretKey, sessionPub)
-//	fmt.Println(cipher, encryptedSecretKey, tempPub)
-//
-//	plain, _ := Open(cipher, encryptedSecretKey, tempPub, sessionPri)
-//	//fmt.Println(plain, ok)
-//
-//	fn := "second_return.mp4"
-//	data := []byte(plain)
-//	fmt.Println(os.ModeAppend)
-//	ioutil.WriteFile(fn, data, 0664)
-//	if err != nil {
-//		fmt.Printf("%s\n", err)
-//		panic(err)
-//	}
-//}

@@ -5,14 +5,10 @@ import (
 	"digital-envelope/common/secretbox"
 )
 
-func Seal(msg string, secretKey string, sessionPub string) (string, string, string) {
-	tempPub, tempPri, err := box.GenerateKeyPair()
-	if err != nil {
-		panic(err)
-	}
+func Seal(msg string, secretKey string, receivePubKey string, senderPriKey string) (string, string) {
 	cipher := secretbox.Seal(secretKey, msg)
-	encryptedSecretKey := box.Seal(secretKey, sessionPub, tempPri)
-	return cipher, encryptedSecretKey, tempPub
+	encryptedSecretKey := box.Seal(secretKey, receivePubKey, senderPriKey)
+	return cipher, encryptedSecretKey
 }
 
 func Open(cipher string, encryptedSecretKey string, tempPub string, sessionPri string) (string, bool) {
